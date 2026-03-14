@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "coder-os",
-    "slug": "coder-os",
+    "name": "t4code",
+    "slug": "t4code",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "coderos",
+    "scheme": "t4code",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
