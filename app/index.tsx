@@ -1,29 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
-  Platform, 
-  SafeAreaView,
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
   Dimensions,
   Animated
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import { 
-  Plus, 
-  ChevronDown, 
-  Lock, 
+import {
+  Plus,
+  ChevronDown,
+  Lock,
   Unlock,
-  MessageSquare, 
-  Square, 
-  GitBranch, 
+  MessageSquare,
+  Square,
+  GitBranch,
   Zap,
-  Layout,
   ArrowUp,
   TerminalSquare,
   Sparkles,
@@ -32,36 +30,14 @@ import {
   Menu,
   X
 } from 'lucide-react-native';
+import { SproutIcon, SparkleIcon } from '@/components/icons';
+import { Stack } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const isMobile = width < 768;
 
-const SproutIcon = ({ color = "#a1a1aa", size = 12 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Path d="M7 20h10" />
-    <Path d="M10 20c5.5-2.5 8-6.4 8-10 0-3.5-2.5-4-5-4 1.5 0 2.5 1.5 2.5 3 0 2-2 3-4 3s-4-1-4-3 1-3 2.5-3c-2.5 0-5 .5-5 4 0 3.6 2.5 7.5 8 10Z" />
-    <Path d="M12 20V9" />
-  </Svg>
-);
-
-const FolderIcon = ({ color = "#a1a1aa", size = 12 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
-  </Svg>
-);
-
-const SparkleIcon = ({ color = "#a1a1aa", size = 12 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    <Path d="M5 3v4" />
-    <Path d="M3 5h4" />
-    <Path d="M19 17v4" />
-    <Path d="M17 19h4" />
-  </Svg>
-);
-
 const SidebarItem = ({ status, label, active, timeago, onPress }) => (
-  <TouchableOpacity 
+  <TouchableOpacity
     onPress={onPress}
     style={[styles.sidebarItem, active && styles.sidebarItemActive]}
   >
@@ -86,14 +62,14 @@ const SidebarGroup = ({ title, icon, defaultExpanded = true, children }) => {
 
   return (
     <View style={styles.sidebarGroup}>
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => setExpanded(!expanded)}
         style={styles.sidebarGroupHeader}
       >
-        <ChevronDown 
-          size={14} 
-          color="#71717a" 
-          style={{ transform: [{ rotate: expanded ? '0deg' : '-90deg' }] }} 
+        <ChevronDown
+          size={14}
+          color="#71717a"
+          style={{ transform: [{ rotate: expanded ? '0deg' : '-90deg' }] }}
         />
         {icon && <View style={styles.sidebarGroupIcon}>{icon}</View>}
         <Text style={styles.sidebarGroupTitle} numberOfLines={1}>{title}</Text>
@@ -132,7 +108,7 @@ const ToolCallCard = ({ count, commands }) => {
 
   return (
     <View style={styles.toolCard}>
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => setExpanded(!expanded)}
         style={styles.toolCardHeader}
       >
@@ -140,10 +116,10 @@ const ToolCallCard = ({ count, commands }) => {
           <TerminalSquare size={12} color="#71717a" />
           <Text style={styles.toolCardTitle}>Tool Calls ({count || commands.length})</Text>
         </View>
-        <ChevronDown 
-          size={14} 
-          color="#52525b" 
-          style={{ transform: [{ rotate: expanded ? '0deg' : '180deg' }] }} 
+        <ChevronDown
+          size={14}
+          color="#52525b"
+          style={{ transform: [{ rotate: expanded ? '0deg' : '180deg' }] }}
         />
       </TouchableOpacity>
 
@@ -158,9 +134,10 @@ const ToolCallCard = ({ count, commands }) => {
   );
 };
 
-export default function Index() {
+export default function App() {
+  const insets = useSafeAreaInsets();
   const [inputValue, setInputValue] = useState('');
-  const [mode, setMode] = useState('chat'); 
+  const [mode, setMode] = useState('chat');
   const [isFullAccess, setIsFullAccess] = useState(true);
   const [envState, setEnvState] = useState('Local');
   const [isTyping, setIsTyping] = useState(false);
@@ -241,7 +218,7 @@ export default function Index() {
     const parts = content.split(/(`[^`]+`)/);
     return (
       <Text style={styles.messageTextGroup}>
-        {parts.map((part, i) => 
+        {parts.map((part, i) =>
           part.startsWith('`') && part.endsWith('`') ? (
             <Text key={i} style={styles.inlineCode}>{part.slice(1, -1)}</Text>
           ) : (
@@ -252,55 +229,57 @@ export default function Index() {
     );
   };
 
-  const SidebarContent = () => (
-    <SafeAreaView style={styles.sidebarInner}>
-      <View style={styles.sidebarHeader}>
-        <Text style={styles.sidebarTitle}>CoderOS <Text style={styles.alphaTag}>ALPHA</Text></Text>
-        {isMobile && (
-          <TouchableOpacity onPress={() => setIsSidebarOpen(false)} style={styles.iconButton}>
-            <X size={16} color="#a1a1aa" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <ScrollView style={styles.sidebarNav}>
-        <SidebarGroup title="coderos-1" icon={<Zap size={12} color="#fbbf24" />}>
-          <SidebarItem status="working" label="I need to create a m..." active timeago="1m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
-          <SidebarItem status="working" label="I want a way to mo..." timeago="6m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
-        </SidebarGroup>
-        <SidebarGroup title="lawn" icon={<SproutIcon color="#34d399" />}>
-          <SidebarItem status="completed" label="How hard would..." timeago="7m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
-        </SidebarGroup>
-      </ScrollView>
-
-      <View style={styles.sidebarFooter}>
-        <TouchableOpacity style={styles.addProjectButton}>
-          <Plus size={14} color="#a1a1aa" />
-          <Text style={styles.addProjectText}>Add project</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
       {isMobile && isSidebarOpen && (
-        <TouchableOpacity 
-          style={styles.overlay} 
-          activeOpacity={1} 
-          onPress={() => setIsSidebarOpen(false)} 
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={() => setIsSidebarOpen(false)}
         />
       )}
 
-      <Animated.View style={[styles.sidebar, isMobile && { transform: [{ translateX: slideAnim }] }]}>
-        <SidebarContent />
+      {/* Sidebar Overlay for Mobile / Static for Web */}
+      <Animated.View style={[
+        styles.sidebar, 
+        isMobile && { transform: [{ translateX: slideAnim }] },
+        { paddingTop: insets.top, paddingBottom: insets.bottom }
+      ]}>
+        <View style={styles.sidebarHeader}>
+          <Text style={styles.sidebarTitle}>CoderOS <Text style={styles.alphaTag}>ALPHA</Text></Text>
+          {isMobile && (
+            <TouchableOpacity onPress={() => setIsSidebarOpen(false)} style={styles.iconButton}>
+              <X size={16} color="#a1a1aa" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <ScrollView style={styles.sidebarNav}>
+          <SidebarGroup title="coderos-1" icon={<Zap size={12} color="#fbbf24" />}>
+            <SidebarItem status="working" label="I need to create a m..." active timeago="1m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
+            <SidebarItem status="working" label="I want a way to mo..." timeago="6m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
+          </SidebarGroup>
+          <SidebarGroup title="lawn" icon={<SproutIcon color="#34d399" />}>
+            <SidebarItem status="completed" label="How hard would..." timeago="7m ago" onPress={() => isMobile && setIsSidebarOpen(false)} />
+          </SidebarGroup>
+        </ScrollView>
+
+        <View style={styles.sidebarFooter}>
+          <TouchableOpacity style={styles.addProjectButton}>
+            <Plus size={14} color="#a1a1aa" />
+            <Text style={styles.addProjectText}>Add project</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
 
-      <View style={styles.main}>
-        <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={styles.main}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <View style={[styles.mainInner, { paddingTop: insets.top }]}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               {isMobile && (
@@ -318,7 +297,7 @@ export default function Index() {
             </View>
           </View>
 
-          <ScrollView 
+          <ScrollView
             ref={scrollViewRef}
             style={styles.chatFeed}
             contentContainerStyle={styles.chatFeedContent}
@@ -352,7 +331,7 @@ export default function Index() {
             )}
           </ScrollView>
 
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.textInput}
@@ -363,7 +342,7 @@ export default function Index() {
                 multiline
                 maxLength={2000}
               />
-              
+
               <View style={styles.inputToolbar}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.toolbarScroll}>
                   <TouchableOpacity style={styles.toolbarButton}>
@@ -371,7 +350,7 @@ export default function Index() {
                     <Text style={styles.toolbarText}>GPT-5.4</Text>
                     <ChevronDown size={12} color="#71717a" />
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity onPress={toggleMode} style={styles.toolbarButton}>
                     {modeConfig.icon}
                     <Text style={styles.toolbarText}>{modeConfig.label}</Text>
@@ -409,73 +388,84 @@ export default function Index() {
               </TouchableOpacity>
             </View>
           </View>
-        </SafeAreaView>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#080808', flexDirection: 'row' },
-  overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 40 },
-  sidebar: { width: 260, backgroundColor: '#0c0c0c', borderRightWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)', zIndex: 50, ...Platform.select({ default: { position: 'absolute', top: 0, bottom: 0, left: 0 }, web: { position: 'relative' } }) },
-  sidebarInner: { flex: 1 },
+  overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 40 },
+  sidebar: { 
+    width: 260, 
+    backgroundColor: '#0c0c0c', 
+    borderRightWidth: 1, 
+    borderColor: 'rgba(39, 39, 42, 0.4)', 
+    zIndex: 50, 
+    ...Platform.select({ 
+      ios: { position: 'absolute', height: '100%', left: 0 },
+      android: { position: 'absolute', height: '100%', left: 0 },
+      web: { position: 'relative' } 
+    }) 
+  },
   sidebarHeader: { height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)' },
-  sidebarTitle: { color: '#f4f4f5', fontSize: 14, fontWeight: '600', flexDirection: 'row', alignItems: 'center' },
-  alphaTag: { fontSize: 8, color: '#71717a', borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.4)', paddingHorizontal: 4, borderRadius: 2, marginLeft: 6 },
+  sidebarTitle: { color: '#f4f4f5', fontSize: 14, fontWeight: '600' },
+  alphaTag: { fontSize: 8, color: '#71717a', borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.4)', paddingHorizontal: 4, borderRadius: 2 },
   iconButton: { padding: 6, borderRadius: 6 },
   sidebarNav: { flex: 1, padding: 12 },
   sidebarGroup: { marginBottom: 16 },
   sidebarGroupHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 8, marginBottom: 6 },
   sidebarGroupTitle: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', color: '#71717a', letterSpacing: 0.5 },
   sidebarGroupContent: { gap: 2 },
-  sidebarItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  sidebarItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   sidebarItemActive: { backgroundColor: 'rgba(39, 39, 42, 0.8)' },
   statusDotContainer: { width: 12, height: 12, alignItems: 'center', justifyContent: 'center' },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
   sidebarItemLabel: { flex: 1, fontSize: 13, color: '#a1a1aa', fontWeight: '500' },
   sidebarItemLabelActive: { color: '#f4f4f5' },
-  sidebarItemTime: { fontSize: 10, color: 'transparent' },
+  sidebarItemTime: { fontSize: 10, color: '#52525b' },
   sidebarFooter: { padding: 16, borderTopWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)' },
   addProjectButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8, borderWidth: 1, borderColor: 'rgba(39, 39, 42, 0.8)', borderRadius: 8 },
   addProjectText: { fontSize: 12, fontWeight: '500', color: '#a1a1aa' },
   main: { flex: 1, backgroundColor: '#080808' },
-  header: { height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)', backgroundColor: 'rgba(8, 8, 8, 0.8)' },
+  mainInner: { flex: 1 },
+  header: { height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   headerTitle: { fontSize: 13, fontWeight: '500', color: '#e4e4e7', flexShrink: 1 },
   headerRight: { flexDirection: 'row', gap: 8 },
   headerActionButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#18181b', borderWidth: 1, borderColor: '#27272a', borderRadius: 6 },
   headerActionText: { fontSize: 12, color: '#a1a1aa', fontWeight: '500' },
   chatFeed: { flex: 1 },
-  chatFeedContent: { padding: 24, paddingBottom: 160, gap: 32 },
+  chatFeedContent: { padding: 20, paddingBottom: 20, gap: 24 },
   userMessageRow: { alignItems: 'flex-end', width: '100%' },
   aiMessageRow: { alignItems: 'flex-start', width: '100%' },
-  userBubble: { backgroundColor: '#27272a', borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.6)', padding: 12, borderRadius: 16, borderTopRightRadius: 4, maxWidth: '85%' },
+  userBubble: { backgroundColor: '#27272a', borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.6)', padding: 12, borderRadius: 16, borderTopRightRadius: 4, maxWidth: '90%' },
   userBubbleText: { color: '#e4e4e7', fontSize: 14, lineHeight: 22, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-  aiBubble: { width: '100%', gap: 16 },
+  aiBubble: { width: '100%', gap: 12 },
   messageTextGroup: { color: '#d4d4d8', fontSize: 15, lineHeight: 24 },
-  inlineCode: { backgroundColor: 'rgba(39, 39, 42, 0.8)', color: '#e4e4e7', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', fontSize: 13, borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.8)', overflow: 'hidden' },
+  inlineCode: { backgroundColor: 'rgba(39, 39, 42, 0.8)', color: '#e4e4e7', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', fontSize: 13, borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.8)' },
   aiMetadata: { flexDirection: 'row', alignItems: 'center', gap: 8, opacity: 0.8 },
   aiMetadataText: { fontSize: 11, color: '#71717a', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
   aiMetadataDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#3f3f46' },
-  toolCard: { borderWidth: 1, borderColor: 'rgba(39, 39, 42, 0.6)', backgroundColor: 'rgba(20, 20, 20, 0.5)', borderRadius: 12, overflow: 'hidden', marginVertical: 8 },
+  toolCard: { borderWidth: 1, borderColor: 'rgba(39, 39, 42, 0.6)', backgroundColor: 'rgba(20, 20, 20, 0.5)', borderRadius: 12, overflow: 'hidden' },
   toolCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderBottomWidth: 1, borderColor: 'rgba(39, 39, 42, 0.6)' },
   toolCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   toolCardTitle: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', color: '#a1a1aa', letterSpacing: 0.5 },
-  toolCardContent: { padding: 16, gap: 4 },
-  commandItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 6, position: 'relative' },
+  toolCardContent: { padding: 12, gap: 4 },
+  commandItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 4 },
   commandBullet: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#3f3f46', marginTop: 8 },
-  commandType: { fontSize: 13, color: '#71717a', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-  commandPath: { flex: 1, fontSize: 13, color: '#d4d4d8', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-  copiedBadge: { position: 'absolute', right: 0, top: 4, backgroundColor: 'rgba(16, 185, 129, 0.1)', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  commandType: { fontSize: 12, color: '#71717a', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  commandPath: { flex: 1, fontSize: 12, color: '#d4d4d8', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  copiedBadge: { position: 'absolute', right: 0, top: 2, backgroundColor: 'rgba(16, 185, 129, 0.1)', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   copiedText: { fontSize: 10, color: '#34d399' },
-  typingIndicator: { flexDirection: 'row', gap: 8, paddingVertical: 8 },
-  typingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#52525b' },
-  inputWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, backgroundColor: '#080808' },
+  typingIndicator: { flexDirection: 'row', gap: 6, paddingVertical: 4 },
+  typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#52525b' },
+  inputWrapper: { padding: 12, backgroundColor: '#080808', borderTopWidth: 1, borderColor: 'rgba(39, 39, 42, 0.2)' },
   inputContainer: { borderWidth: 1, borderColor: 'rgba(63, 63, 70, 0.6)', backgroundColor: 'rgba(20, 20, 20, 0.95)', borderRadius: 16, padding: 12 },
-  textInput: { color: '#f4f4f5', fontSize: 15, maxHeight: 120, minHeight: 24, padding: 0 },
+  textInput: { color: '#f4f4f5', fontSize: 15, maxHeight: 150, minHeight: 24, padding: 0 },
   inputToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, borderTopWidth: 1, borderColor: 'rgba(39, 39, 42, 0.4)', paddingTop: 12 },
-  toolbarScroll: { flex: 1, marginRight: 16 },
+  toolbarScroll: { flex: 1, marginRight: 8 },
   toolbarButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 },
   toolbarButtonWarning: { backgroundColor: 'rgba(251, 146, 60, 0.1)' },
   toolbarIconBg: { width: 16, height: 16, backgroundColor: '#27272a', borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
@@ -483,8 +473,9 @@ const styles = StyleSheet.create({
   submitContainer: { justifyContent: 'flex-end', minWidth: 32 },
   sendButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   stopButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#ff3355', alignItems: 'center', justifyContent: 'center' },
-  footerContext: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, marginTop: 12 },
+  footerContext: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, marginTop: 8 },
   footerContextText: { fontSize: 10, color: '#71717a', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
-  footerBranch: { flexDirection: 'row', alignItems: 'center', gap: 6 }
+  footerBranch: { flexDirection: 'row', alignItems: 'center', gap: 4 }
 });
+
 
