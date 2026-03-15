@@ -276,8 +276,8 @@ export default function App() {
 
       <KeyboardAvoidingView
         style={styles.main}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-1}
       >
         <View style={[styles.mainInner, { paddingTop: insets.top }]}>
           <View style={styles.header}>
@@ -302,6 +302,8 @@ export default function App() {
             style={styles.chatFeed}
             contentContainerStyle={styles.chatFeedContent}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({animated: true})}
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
           >
             {messages.map((msg) => (
               <View key={msg.id} style={msg.role === 'user' ? styles.userMessageRow : styles.aiMessageRow}>
