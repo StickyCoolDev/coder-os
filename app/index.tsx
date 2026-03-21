@@ -1,3 +1,5 @@
+import '@/lib/polyfills';
+
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -11,7 +13,7 @@ import {
   Dimensions,
   Animated
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import {
   Plus,
@@ -32,7 +34,7 @@ import {
 } from 'lucide-react-native';
 import { SproutIcon, SparkleIcon } from '@/components/icons';
 import { Stack } from 'expo-router';
-
+import { performClone } from '@/lib/gitActions';
 const { width } = Dimensions.get('window');
 const isMobile = width < 768;
 
@@ -145,7 +147,33 @@ export default function App() {
 
   const scrollViewRef = useRef(null);
   const slideAnim = useRef(new Animated.Value(isMobile ? -300 : 0)).current;
+const handleAddProject = async () => {
+  const targetUrl = 'https://github.com/StickyCoolDev/GG.git';
+  
+  // Optional: Show feedback in the UI
+  setIsTyping(true);
+  const startMsg = {
+    id: Date.now().toString(),
+    role: 'ai',
+    content: `Starting clone of \`Tokify\`...`,
+    time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+  };
+  setMessages(prev => [...prev, startMsg]);
 
+  const result = await performClone(targetUrl);
+
+  setIsTyping(false);
+  
+  const endMsg = {
+    id: (Date.now() + 1).toString(),
+    role: 'ai',
+    content: result.success 
+      ? `Successfully cloned \`Tokify\` to \`${result.dir}\`. You can now start indexing the project.`
+      : `Failed to clone: ${result.error}`,
+    time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+  };
+  setMessages(prev => [...prev, endMsg]);
+};
   const [messages, setMessages] = useState([
     {
       id: 'msg-1',
@@ -168,7 +196,7 @@ export default function App() {
         useNativeDriver: true,
       }).start();
     }
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen,slideAnim,]);
 
   const handleSubmit = () => {
     if (!inputValue.trim()) return;
@@ -267,7 +295,7 @@ export default function App() {
         </ScrollView>
 
         <View style={styles.sidebarFooter}>
-          <TouchableOpacity style={styles.addProjectButton}>
+          <TouchableOpacity style={styles.addProjectButton} onPress={handleAddProject} >
             <Plus size={14} color="#a1a1aa" />
             <Text style={styles.addProjectText}>Add project</Text>
           </TouchableOpacity>
