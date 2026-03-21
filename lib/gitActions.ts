@@ -36,6 +36,7 @@ export async function performClone(remoteUrl: string, dirName?: string) {
     return { success: false, error: err };
   }
 }
+
 /**
  * Performes a git add, similar to the command `git add <>`
  * Takes in a single path or a list of paths
@@ -53,6 +54,25 @@ export async function performAdd(dir: string, filepath: string | string[]) {
     }
 
     return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
+}
+
+
+/**
+ * Performs a git commit, similar to the command `git commit -m <message>` 
+ */
+export async function performCommit(dir: string, message: string, author: { name: string; email: string }) {
+  try {
+    const sha = await git.commit({
+      fs: expoFsAdapter,
+      dir,
+      message,
+      author,
+    });
+
+    return { success: true, sha };
   } catch (err) {
     return { success: false, error: err };
   }
